@@ -5,6 +5,10 @@
 ## Build generated
 build/
 DerivedData/
+.build/
+*.swift~
+
+\#*\#
 
 ## Various settings
 *.pbxuser

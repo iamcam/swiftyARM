@@ -1,8 +1,24 @@
+/**
+readTemp.swift
+Copyright (c) 2016 Cameron Perry
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**/
+
 import Foundation
 import Glibc
 
+//.RaspberryPi2 also works with Raspberry Pi3
 let gpios = SwiftyGPIO.GPIOs(for: .RaspberryPi2)
+ 
+// indicator LED lit during temperature read
 var led = gpios[.P6]!
+
+// the LED that will blink on a separate thread
 var tLED = gpios[.P21]!
 
 //Clearer LED states
@@ -15,9 +31,13 @@ var blink = false {
     }
 }
 
+//You'll need to find the ID of your 1-wire temp sensor - DS18B20
 let probeNames = ["28-03159199a5ff"]
+
+//The probe will show up in here so long as you have 1-wire gpio enabled 
 let probeDirectory = "/sys/bus/w1/devices/"
 
+//Prepares our GPIO pins & values
 func loadIndicator() {
      led.direction = .OUT
      led.value = OFF
@@ -77,8 +97,6 @@ func startThread() {
 		     tLED.value = OFF
 		     usleep(50000)
 		 }
-		 exit(0)
-		 
 	  }
      }
 
@@ -87,13 +105,19 @@ func startThread() {
      }
 }
 
+
+loadIndicator()
+
+//Start blinking the light
 startThread()
 sleep(2)
-loadIndicator()
-let probeValue = doReading()
 
+//Demonstrate we can do something else at the same time
+let probeValue = doReading()
 print("\(probeValue) °C / \(probeValue * 1.8 + 32.0)°F")
 
+// Keep blinking the light a little longer
 sleep(2)
 blink = false
 
+exit(0)

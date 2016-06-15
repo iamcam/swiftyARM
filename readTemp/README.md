@@ -11,3 +11,5 @@ Requires a 1-wire DS18B20 temperature sensor and 2 LEDs for indicators. Ensure 1
 2. LED to GPIO pin 6
 3. Another LED to GPIO pin 21
 4. Goes without saying, wire everything with the appropriate resistors in the right places
+
+![readTemp circuit diagram](1wire-temp-sensor.png?raw=true "readTemp circuit diagram")

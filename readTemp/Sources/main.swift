@@ -26,11 +26,7 @@ var tLED = gpios[.P21]!
 let ON = 1
 let OFF = 0
 
-var blink = false {
-  didSet {
-    tLED.value = OFF
-  }
-}
+var blink = false
 
 //You'll need to find the ID of your 1-wire temp sensor - DS18B20
 let probeNames = ["28-03159199a5ff"]
@@ -111,13 +107,14 @@ loadIndicator()
 
 //Start blinking the light
 startThread()
+//and wait 2 seconds
 sleep(2)
 
-//Demonstrate we can do something else at the same time
+//Then do temperature read while the other thread is working
 let probeValue = doReading()
 print("\(probeValue) °C / \(probeValue * 1.8 + 32.0)°F")
 
-// Keep blinking the light a little longer
+// Keep blinking the light a little longer. Thread continues to execute
 sleep(2)
 blink = false
 

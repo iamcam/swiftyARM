@@ -15,7 +15,7 @@ import SwiftyGPIO
 
 //.RaspberryPi2 also works with Raspberry Pi3
 let gpios = SwiftyGPIO.GPIOs(for: .RaspberryPi2)
- 
+
 // indicator LED lit during temperature read
 var led = gpios[.P6]!
 
@@ -27,83 +27,83 @@ let ON = 1
 let OFF = 0
 
 var blink = false {
-    didSet {
-        tLED.value = OFF
-    }
+  didSet {
+    tLED.value = OFF
+  }
 }
 
 //You'll need to find the ID of your 1-wire temp sensor - DS18B20
 let probeNames = ["28-03159199a5ff"]
 
-//The probe will show up in here so long as you have 1-wire gpio enabled 
+//The probe will show up in here so long as you have 1-wire gpio enabled
 let probeDirectory = "/sys/bus/w1/devices/"
 
 //Prepares our GPIO pins & values
 func loadIndicator() {
-     led.direction = .OUT
-     led.value = OFF
-     tLED.direction = .OUT
-     tLED.value = OFF
+  led.direction = .OUT
+  led.value = OFF
+  tLED.direction = .OUT
+  tLED.value = OFF
 }
 
 
 //reads from the probe, returns temperature in degrees C
 func readProbe(name : String) -> Double {
-     let path = "\(probeDirectory)\(name)/w1_slave"
-     var outval = ""
-     let BUFSIZE = 1024
- 
-     let fp = fopen(path, "r")
+  let path = "\(probeDirectory)\(name)/w1_slave"
+  var outval = ""
+  let BUFSIZE = 1024
 
-     // try reading from /sys/bus/w1/devices/{prob name}/w1_slave
-     if fp != nil {
-     	var buf = [CChar](repeating:CChar(0), count:BUFSIZE)
-	while fgets(&buf, Int32(BUFSIZE), fp) != nil {
-              //outval += String.fromCString(buf)!
-	      outval += String(validatingUTF8:buf)!
-	}
-     }
+  let fp = fopen(path, "r")
 
-     let temp : Double
-     if let tempS = outval.split(byString:"t=").last, t = Double(tempS.trim()) {
-        temp = Double(t)/1000.0
-	} else {
-	  temp = 0.0
-     }
+  // try reading from /sys/bus/w1/devices/{prob name}/w1_slave
+  if fp != nil {
+    var buf = [CChar](repeating:CChar(0), count:BUFSIZE)
+    while fgets(&buf, Int32(BUFSIZE), fp) != nil {
+      //outval += String.fromCString(buf)!
+      outval += String(validatingUTF8:buf)!
+    }
+  }
 
-     return Double(temp)
+  let temp : Double
+  if let tempS = outval.split(byString:"t=").last, t = Double(tempS.trim()) {
+    temp = Double(t)/1000.0
+  } else {
+    temp = 0.0
+  }
+
+  return Double(temp)
 }
 
 func doReading() -> Double{
-     //Turn LED on to indicate we've begun reading the temperature
-     led.value = ON
-     let temp = readProbe(name: probeNames.first!)
+  //Turn LED on to indicate we've begun reading the temperature
+  led.value = ON
+  let temp = readProbe(name: probeNames.first!)
 
-     //sleep a little bit so we don't miss it. Not required
-     usleep(1000)
-     
-     led.value = OFF
-     return temp
+  //sleep a little bit so we don't miss it. Not required
+  usleep(1000)
+
+  led.value = OFF
+  return temp
 }
 
 var thread : NSThread?
 
 func startThread() {
-     if thread == nil {
-          blink = true
-          thread = NSThread() {
-	  	 while blink {
-		     tLED.value = ON
-		     usleep(50000)
-		     tLED.value = OFF
-		     usleep(50000)
-		 }
-	  }
-     }
+  if thread == nil {
+    blink = true
+    thread = NSThread() {
+      while blink {
+        tLED.value = ON
+        usleep(50000)
+        tLED.value = OFF
+        usleep(50000)
+      }
+    }
+  }
 
-     if let thread = thread {
-     	thread.start()
-     }
+  if let thread = thread {
+    thread.start()
+  }
 }
 
 
